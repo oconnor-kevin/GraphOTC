@@ -10,13 +10,15 @@ P2 = adj_to_trans(A2);
 ```
 Then, we can run GraphOTC using the ExactOTC algorithm by calling
 ```
-[gotc_cost, edge_alignment, node_alignment] = exact_otc(P1, P2, c);
+[gotc_cost, gotc, node_alignment] = exact_otc(P1, P2, c);
 ```
 For moderately sized graphs, one may want to use the more efficient EntropicOTC algorithm by calling
 ```
-[gotc_cost, edge_alignment, node_alignment] = entropic_otc(P1, P2, c, L, T, xi, sink_iter, get_sd);
+[gotc_cost, gotc, node_alignment] = entropic_otc(P1, P2, c, L, T, xi, sink_iter, get_sd);
 ```
 The parameters `L` and `T` are used in the ApproxTCE step that approximately evaluates the current transition coupling; the parameters `xi` and `sink_iter` are used in the EntropicTCI step that uses Sinkhorn's algorithm to improve the transition coupling. Larger values of each of these parameters will give a better approximation of ExactOTC at the expense of increased runtime. Finally, the parameter `get_sd` indicates whether the node alignment should be computed and returned. Setting this to 0 when the node alignment is not needed can save some time for larger graphs.
+
+In order to the mass assigned to a pair of edges `(x1, x2)` and `(y1, y2)`, compute `node_alignment(x1, y1)*gotc((x1, y1), (x2, y2))`.
 
 ## Running Experiments and Examples
 Code for reproducing the examples and experimental results described in the paper may be found in the folders `examples` and `experiments`. Note that you will have to modify any directories in the scripts before you run them. Moreover, the classification experiment code should be run with `longleaf=0`.
