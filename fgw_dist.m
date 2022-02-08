@@ -13,7 +13,7 @@ function [FGW,pi] = fgw_dist(M, C1, C2, mu1, mu2, q, alpha)
             for j=1:n
                 for k=1:m
                     for l=1:n
-                        loss = loss + alpha*abs(C1(i,k)-C2(j,l))^q*pi(i,j)*pi(k,l);
+                        loss = loss + 2*alpha*abs(C1(i,k)-C2(j,l))^q*pi(i,j)*pi(k,l);
                     end
                 end
             end
@@ -28,7 +28,7 @@ function [FGW,pi] = fgw_dist(M, C1, C2, mu1, mu2, q, alpha)
             for j=1:n
                 for k=1:m
                     for l=1:n
-                        grad(i,j) = grad(i,j) + alpha*abs(C1(i,k)-C2(j,l))^q*pi(k,l);
+                        grad(i,j) = grad(i,j) + 2*alpha*abs(C1(i,k)-C2(j,l))^q*pi(k,l);
                     end
                 end
             end
