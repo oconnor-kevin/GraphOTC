@@ -22,6 +22,7 @@ point_sigma = 1;
 dimension = 3;
 lambda_vec = [1e-2];
 mean_sigma_vec = [1 2 3];
+tm_scaling = 'linear';  % linear or exponential
 
 % Cross-validation parameters
 do_cv = 1;
@@ -42,7 +43,7 @@ for mean_sigma=mean_sigma_vec
         disp(['lambda' num2str(lambda)]);
         if do_cv
             disp('Doing cross-validation');
-            fgw_params = pc_align_cv(mean_sigma, lambda, cv_iter, alpha_grid);
+            fgw_params = pc_align_cv(mean_sigma, lambda, tm_scaling, cv_iter, alpha_grid);
             disp('Best FGW params:');
             disp(fgw_params);
         end
@@ -58,8 +59,8 @@ for mean_sigma=mean_sigma_vec
             % Construct graphs
             distmat1 = squareform(pdist(points1));
             distmat2 = squareform(pdist(points2));
-            A1 = -lambda*distmat1;
-            A2 = -lambda*distmat2;
+            A1 = -distmat1;
+            A2 = -distmat2;
             % Rescale
             A1 = (A1-min(A1,[],'all'))/(max(A1,[],'all') - min(A1,[],'all'));
             A2 = (A2-min(A2,[],'all'))/(max(A2,[],'all') - min(A2,[],'all'));
@@ -72,10 +73,14 @@ for mean_sigma=mean_sigma_vec
             n2 = size(A2,1);
 
             % Compute transition matrices and stationary distributions
-            P1 = adj_to_trans(A1);
-            P2 = adj_to_trans(A2);
-            %P1 = adj_to_trans(A1+1e-4);
-            %P2 = adj_to_trans(A2+1e-4);
+            if strcmp(tm_scaling, 'linear')
+                P1 = A1./sum(A1,2);
+                P2 = A2./sum(A2,2);
+            elseif strcmp(tm_scaling, 'exponential')
+                P1 = adj_to_trans(lambda*A1);
+                P2 = adj_to_trans(lambda*A2);
+            end
+            
             stat_dist1 = approx_stat_dist(P1, 100)';
             stat_dist2 = approx_stat_dist(P2, 100)';
             

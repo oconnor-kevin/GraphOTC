@@ -20,6 +20,7 @@ while g_old(1) - g(1) > tol
     
     % Approximate transition coupling evaluation.
     [g, h] = approx_tce(P, c, L, T);
+    %disp(g(1));
     
     % Entropic transition coupling improvement.
     P = entropic_tci(h, P_old, Px, Py, xi, sink_iter);

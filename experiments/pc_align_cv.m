@@ -2,7 +2,7 @@
 % pc_align_cv.m
 %%
 
-function fgw_params = pc_align_cv(mean_sigma, lambda, cv_iter, alpha_grid)
+function fgw_params = pc_align_cv(mean_sigma, lambda, tm_scaling, cv_iter, alpha_grid)
     dimension = 3;
     n_points1 = 10;
     n_points2 = 5;
@@ -43,8 +43,8 @@ function fgw_params = pc_align_cv(mean_sigma, lambda, cv_iter, alpha_grid)
         % Construct graphs
         distmat1 = squareform(pdist(points1));
         distmat2 = squareform(pdist(points2));
-        A1 = -lambda*distmat1;
-        A2 = -lambda*distmat2;
+        A1 = -distmat1;
+        A2 = -distmat2;
         % Rescale
         A1 = (A1-min(A1,[],'all'))/(max(A1,[],'all') - min(A1,[],'all'));
         A2 = (A2-min(A2,[],'all'))/(max(A2,[],'all') - min(A2,[],'all'));
@@ -57,10 +57,14 @@ function fgw_params = pc_align_cv(mean_sigma, lambda, cv_iter, alpha_grid)
         n2 = size(A2,1);
         
         % Construct transition matrices and stationary distributions
-        %P1 = adj_to_trans(A1);
-        %P2 = adj_to_trans(A2);
-        P1 = adj_to_trans(A1+1e-4);
-        P2 = adj_to_trans(A2+1e-4);
+        if strcmp(tm_scaling, 'linear')
+            P1 = A1./sum(A1,2);
+            P2 = A2./sum(A2,2);
+        elseif strcmp(tm_scaling, 'exponential')
+            P1 = adj_to_trans(lambda*A1);
+            P2 = adj_to_trans(lambda*A2);
+        end
+
         stat_dist1 = approx_stat_dist(P1, 100)';
         stat_dist2 = approx_stat_dist(P2, 100)';
         
@@ -91,8 +95,6 @@ function fgw_params = pc_align_cv(mean_sigma, lambda, cv_iter, alpha_grid)
                 for x_col=1:n1
                     for y_row=1:n2
                         for y_col=1:n2
-                            idx1 = n2*(x_row-1)+y_row;
-                            idx2 = n2*(x_col-1)+y_col;
                             if fix((x_row-1)/n_points1) == fix((x_col-1)/n_points1) && fix((y_row-1)/n_points2) == fix((y_col-1)/n_points2)
                                 edge_mass_fgw = edge_mass_fgw + fgw_alignment(x_row, y_row)*fgw_alignment(x_col, y_col);
                             end
